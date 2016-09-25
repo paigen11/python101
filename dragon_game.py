@@ -26,6 +26,7 @@ class Hero(object):
 		self.health = 10
 		self.strength = 5
 		self.defense = 0
+		self.can_go = False
 
 	def alive(self):
 		return self.health > 0
@@ -44,13 +45,17 @@ class Hero(object):
 		self.defense = random.randint(0,3)
 
 	def spell(self, enemy):
-		spell_effect = random.randint(0,1)
-		if spell_effect == 0:
-			slowType("Your spell didn't affect the dragon. Quick attack before it burns you up!\n")
+		if self.can_go == True:
+			self.can_go = False 
+			spell_effect = random.randint(0,1)
+			if spell_effect == 0:
+				slowType("Your spell didn't affect the dragon. Quick attack before it burns you up!\n")
+			else:
+				enemy.health -= 5
+				slowType("That spell you cast did a lot of damage! Nice magic!\n")
+				slowType("The dragon's health is " +str(enemy.health)+ "\n")
 		else:
-			enemy.health -= 5
-			slowType("That spell you cast did a lot of damage! Nice magic!\n")
-			slowType("The dragon's health is " +str(enemy.health)+ "\n")	
+			self.can_go = True		
 
 class Dragon(object):
 	def __init__(self):
@@ -100,100 +105,99 @@ def play():
 	while fighting:
 		hero.defense = 0
 
-			slowType("Press 1 to fight...\n")
-			slowType("Or 2 to flee.\n")
+		slowType("Press 1 to fight...\n")
+		slowType("Or 2 to flee.\n")
+		player_move = input(">")
+
+		if player_move not in {1,2}:
+			slowType("Wrong. Enter a 1 or 2.\n")
 			player_move = input(">")
 
-			if player_move not in {1,2}:
-				slowType("Wrong. Enter a 1 or 2.\n")
-				player_move = input(">")
+		elif player_move == 2:
+			slowType("You're running? Man, you're such a coward!\n")
+			fighting = False
 
-			elif player_move == 2:
-				slowType("You're running? Man, you're such a coward!\n")
-				fighting = False
-
-				slowType("Do you want to play again?\n")
-				slowType("Press 1 for yes or 2 for no.\n")
+			slowType("Do you want to play again?\n")
+			slowType("Press 1 for yes or 2 for no.\n")
+			player_answer = input("Play again: yes or no?")
+			if player_answer == 1:
+				play()
+			elif player_answer not in {1,2}:
+				slowType("Invalid response.\n")
+				slowType("Enter a 1 or 2.\n")
 				player_answer = input("Play again: yes or no?")
-				if player_answer == 1:
-					play()
-				elif player_answer not in {1,2}:
-					slowType("Invalid response.\n")
-					slowType("Enter a 1 or 2.\n")
+			elif player_answer == 2:	
+				slowType("Goodbye\n")
+				sys.exit
+
+		elif player_move == 1:
+			slowType("Ok, you're going to fight this dragon!\n")
+			slowType("What do you want to do?\n")
+			slowType("Press 1 for attack...\n")
+			slowType("Press 2 to defend with your shield...\n")
+			slowType("Press 3 to launch a spell (you wait one turn to prepare your spell)...\n")
+			player_fight = input(">")
+
+			if player_fight == 1:
+				hero.attack(dragon)
+				
+				if not dragon.alive():
+					slowType("You killed the dragon!\n")
+					slowType("Do you want to play again?\n")
+					slowType("Press 1 for yes or 2 for no.\n")
 					player_answer = input("Play again: yes or no?")
-				elif player_answer == 2:	
-					slowType("Goodbye\n")
-					sys.exit
-
-			elif player_move == 1:
-				slowType("Ok, you're going to fight this dragon!\n")
-				slowType("What do you want to do?\n")
-				slowType("Press 1 for attack...\n")
-				slowType("Press 2 to defend with your shield...\n")
-				slowType("Press 3 to launch a spell...\n")
-				player_fight = input(">")
-
-				if player_fight == 1:
-					hero.attack(dragon)
-					
-					if not dragon.alive():
-						slowType("You killed the dragon!\n")
-						slowType("Do you want to play again?\n")
-						slowType("Press 1 for yes or 2 for no.\n")
+					if player_answer == 1:
+						play()
+					elif player_answer not in {1,2}:
+						slowType("Invalid response.\n")
+						slowType("Enter a 1 or 2.\n")
 						player_answer = input("Play again: yes or no?")
-						if player_answer == 1:
-							play()
-						elif player_answer not in {1,2}:
-							slowType("Invalid response.\n")
-							slowType("Enter a 1 or 2.\n")
-							player_answer = input("Play again: yes or no?")
-						elif player_answer == 2:	
-							slowType("Goodbye\n")
-							sys.exit
+					elif player_answer == 2:	
+						slowType("Goodbye\n")
+						sys.exit
 
-				elif player_fight == 2:
-					hero.defend()
-				
-				elif player_fight == 3:
-					hero.spell(dragon)
-						
-					if not dragon.alive():
-						slowType("You killed the dragon!\n")
-						slowType("Do you want to play again?\n")
-						slowType("Press 1 for yes or 2 for no.\n")
-						player_answer = input("Play again: yes or no?")
-						if player_answer == 1:
-							play()
-						elif player_answer not in {1,2}:
-							slowType("Invalid response.\n")
-							slowType("Enter a 1 or 2.\n")
-							player_answer = input("Play again: yes or no?")
-						elif player_answer == 2:	
-							slowType("Goodbye\n")
-							sys.exit				
+			elif player_fight == 2:
+				hero.defend()
 			
-				else:
-					slowType("That was a dumb move, what do you really want to do? Choose 1, 2 or 3.\n")
-					player_fight = input(">")
-					continue
-
-				if dragon.alive():
-					dragon.attack(hero, hero.defense)	
+			elif player_fight == 3:
+				hero.spell(dragon)
 					
-					if hero.health <= 0:
-						slowType("The dragon burned you to a crisp and you're dead.\n")
-						slowType("Want to play again?\n")
-						slowType("Press 1 for yes or 2 for no.\n")
+				if not dragon.alive():
+					slowType("You killed the dragon!\n")
+					slowType("Do you want to play again?\n")
+					slowType("Press 1 for yes or 2 for no.\n")
+					player_answer = input("Play again: yes or no?")
+					if player_answer == 1:
+						play()
+					elif player_answer not in {1,2}:
+						slowType("Invalid response.\n")
+						slowType("Enter a 1 or 2.\n")
 						player_answer = input("Play again: yes or no?")
-						if player_answer == 1:
-							play()
-						elif player_answer not in {1,2}:
-							slowType("Invalid response.\n")
-							slowType("Enter a 1 or 2.\n")
-							player_answer = input("Play again: yes or no?")
-						elif player_answer == 2:	
-							slowType("Goodbye\n")
-							sys.exit
+					elif player_answer == 2:	
+						slowType("Goodbye\n")
+						sys.exit				
+		
+			else:
+				slowType("That was a dumb move, what do you really want to do? Choose 1, 2 or 3.\n")
+				player_fight = input(">")
+				continue
+
+			if dragon.alive():
+				dragon.attack(hero, hero.defense)	
 				
-		# fighting = False
+				if hero.health <= 0:
+					slowType("The dragon burned you to a crisp and you're dead.\n")
+					slowType("Want to play again?\n")
+					slowType("Press 1 for yes or 2 for no.\n")
+					player_answer = input("Play again: yes or no?")
+					if player_answer == 1:
+						play()
+					elif player_answer not in {1,2}:
+						slowType("Invalid response.\n")
+						slowType("Enter a 1 or 2.\n")
+						player_answer = input("Play again: yes or no?")
+					elif player_answer == 2:	
+						slowType("Goodbye\n")
+						sys.exit
+				
 play()					
